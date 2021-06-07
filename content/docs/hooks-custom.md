@@ -65,15 +65,13 @@ function FriendListItem(props) {
 
 Oʻrniga, ushbu mantiqiy qismni `FriendStatus` va `FriendListItem` oʻrtasida taqsimlasak boʻladi.
 
-Traditionally in React, we've had two popular ways to share stateful logic between components: [render props](/docs/render-props.html) and [higher-order components](/docs/higher-order-components.html). We will now look at how Hooks solve many of the same problems without forcing you to add more components to the tree.
+Azaldan, Reactʼda holat qatnashgan mantiqiy qismlarni ikki mashhur yoʻl bilan taqsimlay olasiz: [chizuv kiritmalari](/docs/render-props.html) (render props) yoki [yuqori darajali komponent](/docs/higher-order-components.html) (higher-order components). Huklar bilan esa, bu muammoni (DOM) daraxtga ortiqcha komponent qoʻshmasdan hal qilsa boʻladi.
 
-Anʼanaga koʻra Reactʼda ikki mashhur yoʻl bilan holatli mantiqiy qismlarni taqsimlay olasiz, bular: [chizuv kiritmalari](/docs/render-props.html) (render props) yoki [yuqori darajali komponent](/docs/higher-order-components.html) (higher-order components) boʻlishi mumkin. Hozir shunga oʻxshash muammolarni yechishda huklar yordamida (DOM) daraxtga ortiqcha komponent qoʻshmasdan  .
+## Qoʻlbola hukni ajratish {#extracting-a-custom-hook}
 
-## Extracting a Custom Hook {#extracting-a-custom-hook}
+JavaScriptʼda mantiqiy qismni ikki funksiya bilan ulashish uchun, uni uchinchi funksiyaga ajratamiz. Komponent hamda huklar ham funksiya boʻlganligi uchun, bu ular uchun ham ishlaydi!
 
-When we want to share logic between two JavaScript functions, we extract it to a third function. Both components and Hooks are functions, so this works for them too!
-
-**A custom Hook is a JavaScript function whose name starts with "`use`" and that may call other Hooks.** For example, `useFriendStatus` below is our first custom Hook:
+**Qoʻlbola huk nomlanishi "`use`" deb boshlangan JavaScript funksiyasi va u boshqa huklarni chaqira oladi.** Misol uchun, quyidagi `useFriendStatus` bizning birinchi qoʻlbola hukimiz:
 
 ```js{3}
 import { useState, useEffect } from 'react';
@@ -96,11 +94,11 @@ function useFriendStatus(friendID) {
 }
 ```
 
-There's nothing new inside of it -- the logic is copied from the components above. Just like in a component, make sure to only call other Hooks unconditionally at the top level of your custom Hook.
+Buni ichida hech qanday yangilik yoʻq -- mantiqiy qism yuqoridagi komponentlardan koʻchirib olingan. Komponentlarda boʻlganidek, qoʻlbola huklarda ham huklarni shartli asosda chaqirmang.
 
-Unlike a React component, a custom Hook doesn't need to have a specific signature. We can decide what it takes as arguments, and what, if anything, it should return. In other words, it's just like a normal function. Its name should always start with `use` so that you can tell at a glance that the [rules of Hooks](/docs/hooks-rules.html) apply to it.
+React kompontentlardan farqli, qoʻlbola huk ayni bir shaklga ega boʻlishi shart emas. Uni aynan qanday argument olishi hamda nima qaytarishini belgilay olamiz. Boshqacha aytganda, u oddiy funksiya kabidir. Bir qarashda u [huklar uchun qoidalar](/docs/hooks-rules.html)ga boʻysunishini anglay olish uchun nomini `use` bilan boshlashingiz shart.
 
-The purpose of our `useFriendStatus` Hook is to subscribe us to a friend's status. This is why it takes `friendID` as an argument, and returns whether this friend is online:
+`useFriendStatus` hukining vazifasi doʻstimizning statusiga obuna boʻlish. Shuning uchun argument sifatida `friendID`ni olmoqda va doʻstimiz onlayn yoki yoʻqligini qaytaryapti:
 
 ```js
 function useFriendStatus(friendID) {
@@ -112,22 +110,22 @@ function useFriendStatus(friendID) {
 }
 ```
 
-Now let's see how we can use our custom Hook.
+Qani endi qoʻlbola hukimizni qanday ishlatishni oʻrganamiz.
 
-## Using a Custom Hook {#using-a-custom-hook}
+## Qoʻlbola hukni ishlatish {#using-a-custom-hook}
 
-In the beginning, our stated goal was to remove the duplicated logic from the `FriendStatus` and `FriendListItem` components. Both of them want to know whether a friend is online.
+Maqsadimi `FriendStatus` va `FriendListItem` komponentlaridagi bir xil mantiqiy qismlarni yoʻqotmoqchi edik. Ikki komponent ham doʻstimiz onlaynmi yoʻqmi bilmoqchi.
 
-Now that we've extracted this logic to a `useFriendStatus` hook, we can *just use it:*
+Endi oʻsha mantiqiy qismni `useFriendStatus` hukiga ajratdik va buni *shunchaki ishlata olamiz:*
 
 ```js{2}
 function FriendStatus(props) {
   const isOnline = useFriendStatus(props.friend.id);
 
   if (isOnline === null) {
-    return 'Loading...';
+    return 'Yuklanyapti...';
   }
-  return isOnline ? 'Online' : 'Offline';
+  return isOnline ? 'Onlayn' : 'Oflayn';
 }
 ```
 
@@ -143,11 +141,13 @@ function FriendListItem(props) {
 }
 ```
 
-**Is this code equivalent to the original examples?** Yes, it works in exactly the same way. If you look closely, you'll notice we didn't make any changes to the behavior. All we did was to extract some common code between two functions into a separate function. **Custom Hooks are a convention that naturally follows from the design of Hooks, rather than a React feature.**
+**Bu kod asl misollar bilan bir xilmi?** Ha, u ayni bir xil ravishda ishlaydi. Yaqindan qarasangiz, xatti-harakatga hech qanday oʻzgartirish kiritmadik. Shunchaki ikki funksiyadan ayni bir xil kodni alohida funksiyaga ajratib oldik. **Qoʻlbola huklar Reactʼning imkoniyati emas, balki huklar tuzilishini tabiy ravishda ishlatish usullaridan biri.**
 
-**Do I have to name my custom Hooks starting with “`use`”?** Please do. This convention is very important. Without it, we wouldn't be able to automatically check for violations of [rules of Hooks](/docs/hooks-rules.html) because we couldn't tell if a certain function contains calls to Hooks inside of it.
+**Qoʻlbola huklarimni nomini “`use`” bilan boshlashim shartmi?** Iltimos, shunday qiling. Bu kelishuv juda muhim. Aks holda, [huklar uchun qoidalar](/docs/hooks-rules.html) buzilmayotganini oʻz-oʻzidan tekshirilmaydi, chunki qaysidir funksiya ichida huklar chaqirilayotganini ayta olmaymiz.
 
 **Do two components using the same Hook share state?** No. Custom Hooks are a mechanism to reuse *stateful logic* (such as setting up a subscription and remembering the current value), but every time you use a custom Hook, all state and effects inside of it are fully isolated.
+
+**Ikki komponent ishlatayotgan hukdagi holat umumiymi?** Yoʻq. Qoʻlbola huklar *holatli mantiqni (stateful logic)* qayta ishlatadigan qurilma hisoblanadi (such as setting up a subscription and remembering the current value), but every time you use a custom Hook, all state and effects inside of it are fully isolated.
 
 **How does a custom Hook get isolated state?** Each *call* to a Hook gets isolated state. Because we call `useFriendStatus` directly, from React's point of view our component just calls `useState` and `useEffect`. And as we [learned](/docs/hooks-state.html#tip-using-multiple-state-variables) [earlier](/docs/hooks-effect.html#tip-use-multiple-effects-to-separate-concerns), we can call `useState` and `useEffect` many times in one component, and they will be completely independent.
 
